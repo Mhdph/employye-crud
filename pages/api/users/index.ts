@@ -1,7 +1,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import connectMongo from "../../../database/connection";
-import { getUsers, postUser, putUser } from "../../../database/controller";
+import {
+  getUsers,
+  postUser,
+  putUser,
+  deleteUser,
+} from "../../../database/controller";
 
 type Data = {
   name?: string;
@@ -28,7 +33,7 @@ export default async function handler(
       putUser(req, res);
       break;
     case "DELETE":
-      res.status(200).json({ method, name: "Delete Request" });
+      deleteUser(req, res);
       break;
     default:
       res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
