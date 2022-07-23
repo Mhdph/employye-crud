@@ -1,8 +1,19 @@
 import React from "react";
 import { TrashIcon, PencilIcon } from "@heroicons/react/outline";
-import data from "../database/data.json";
+import { getUsers } from "../lib/helper";
+import { useQuery } from "@tanstack/react-query";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleChangeAction } from "../app/reducer";
 
 function Table() {
+  const { isLoading, isError, data, error } = useQuery(["users"], getUsers);
+
+  if (isLoading) return "Loading...";
+
+  if (error instanceof Error) {
+    error.message;
+  }
+
   return (
     <table className="min-w-full table-auto">
       <thead>
@@ -46,10 +57,20 @@ interface Props {
 }
 
 function Tr({ id, name, avatar, email, salary, date, status }: Props) {
+  const visible = useSelector((state: any) => state.app.client.toggleForm);
+  const dispatch = useDispatch();
+
+  const onUpdate = () => {
+    dispatch(toggleChangeAction());
+  };
+
   return (
     <tr className="bg-grat-50 text-center">
       <td className="px-16 py-2 flex flex-row items-center">
-        <img src={avatar || "#"} />
+        <img
+          className="h-8 w-8 rounded-full object-cover"
+          src={avatar || "#"}
+        />
         <span className="text-center ml-2 font-semibold">{name}</span>
       </td>
       <td className="px-16 py-2">
@@ -63,14 +84,18 @@ function Tr({ id, name, avatar, email, salary, date, status }: Props) {
       </td>
       <td className="px-16 py-2">
         <button className="cursor-pointer">
-          <span className="bg-green-500 text-white py-1 px-5 rounded-full">
+          <span
+            className={` ${
+              status === "Active" ? "bg-green-500" : "bg-rose-500"
+            }  text-white py-1 px-5 rounded-full`}
+          >
             {status}
           </span>
         </button>
       </td>
       <td className="px-16 py-2">
         <button className="cursor-pointer flex justify-around gap-5">
-          <PencilIcon className="h-5 w-5  text-green-600 " />
+          <PencilIcon onClick={onUpdate} className="h-5 w-5  text-green-600 " />
           <TrashIcon className="h-5 w-5 text-red-700 " />
         </button>
       </td>

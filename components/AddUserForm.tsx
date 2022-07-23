@@ -2,6 +2,8 @@ import React, { useReducer } from "react";
 import Success from "./Success";
 import { PlusIcon } from "@heroicons/react/solid";
 import Bug from "./Bug";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { addUser, getUsers } from "../lib/helper";
 
 const reducer = (state: any, event: { target: { name: any; value: any } }) => {
   return {
@@ -11,20 +13,36 @@ const reducer = (state: any, event: { target: { name: any; value: any } }) => {
 };
 
 function AddUserForm() {
+  const queryClient = useQueryClient();
   const [formdata, setFormData] = useReducer(reducer, {});
-
+  const addMutation = useMutation(addUser, {
+    onSuccess: () => {
+      queryClient.prefetchQuery(["users"], getUsers);
+    },
+  });
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (Object.keys(formdata).length === 0) {
-      return <Bug message="You Must Complate all Field" />;
-    }
-    console.log(formdata);
+    if (Object.keys(formdata).length == 0)
+      return console.log("Don't have Form Data");
+    let { firstname, lastname, email, salary, date, status } = formdata;
+
+    const model = {
+      name: `${firstname} ${lastname}`,
+      avatar: `https://randomuser.me/api/portraits/men/${Math.floor(
+        Math.random() * 10
+      )}.jpg`,
+      email,
+      salary,
+      date,
+      status: status ?? "Active",
+    };
+
+    addMutation.mutate(model);
   };
 
-  if (Object.keys(formdata).length > 0) {
-    return <Success message={"Data Added"} />;
-  }
-
+  if (addMutation.isLoading) return <div>Loading!</div>;
+  if (addMutation.isSuccess)
+    return <Success message={"Added Successfully"}></Success>;
   return (
     <form
       className="grid lg:grid-cols-2 w-4/6 gap-4 py-5"
